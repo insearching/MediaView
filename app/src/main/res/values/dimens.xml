@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="file_name_size">14sp</dimen>
+    <dimen name="image_list_width">200dp</dimen>
+    <dimen name="image_list_height">100dp</dimen>
+    <dimen name="interval_size">24sp</dimen>
 </resources>

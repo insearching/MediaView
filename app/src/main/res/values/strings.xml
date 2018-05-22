@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MediaView</string>
+    <string name="preview">Preview</string>
 </resources>

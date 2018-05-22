@@ -1,10 +1,9 @@
-package com.media.mediaview.ui.main
+package com.media.mediaview
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
-import android.graphics.Bitmap
+import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -13,54 +12,64 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.media.mediaview.R
+import com.media.mediaview.PreviewActivity.Companion.LIST
+import com.media.mediaview.PreviewActivity.Companion.POSITION
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.media_item.view.*
+import java.io.File
 
-class MainFragment : Fragment() {
+class ContentListFragment : Fragment(), ContentListPresenter.View {
 
     private lateinit var mediaAdapter: MediaAdapter
     private lateinit var activityContext: Context
+    private var viewPresenter = ContentListPresenter()
 
     companion object {
-        fun newInstance() = MainFragment()
+        fun newInstance() = ContentListFragment()
     }
 
-    private lateinit var viewModel: MainViewModel
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.main_fragment, container, false)
+        return inflater.inflate(R.layout.content_list_fragment, container, false)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        viewPresenter.bind(this)
+        viewPresenter.requestMedia(activityContext.contentResolver)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewPresenter.unbind()
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         activityContext = context
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        viewModel.init(context)
-        viewModel.liveData.observe(this, Observer {
-            mediaAdapter.notifyDataSetChanged()
-        })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val recycler = view.findViewById<RecyclerView>(R.id.media_list)
-        mediaAdapter = MediaAdapter(viewModel)
+        mediaAdapter = MediaAdapter(viewPresenter)
         recycler.adapter = mediaAdapter
         recycler.layoutManager = GridLayoutManager(activityContext, 2)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+    override fun openMedia(mediaList: List<ContentListPresenter.Media>, position: Int) {
+        startActivity(Intent(activityContext, PreviewActivity::class.java)
+                .putParcelableArrayListExtra(LIST, mediaList as ArrayList<out Parcelable>)
+                .putExtra(POSITION, position))
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        viewModel.onRequestPermissionsResult(activityContext, requestCode, grantResults)
+    override fun updateList() {
+        mediaAdapter.notifyDataSetChanged()
     }
 
-    inner class MediaAdapter internal constructor(private val viewModel: MainViewModel)
+    inner class MediaAdapter internal constructor(private val viewPresenter: ContentListPresenter)
         : RecyclerView.Adapter<MediaAdapter.MediaViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
@@ -69,11 +78,11 @@ class MainFragment : Fragment() {
         }
 
         override fun getItemCount(): Int {
-            return viewModel.getMediaCount()
+            return viewPresenter.getMediaCount()
         }
 
         override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
-            viewModel.onBindRowViewAtPosition(position, holder)
+            viewPresenter.onBindRowViewAtPosition(position, holder)
         }
 
         inner class MediaViewHolder(view: View) : RecyclerView.ViewHolder(view), MediaRow {
@@ -85,8 +94,12 @@ class MainFragment : Fragment() {
                 title.text = text
             }
 
-            override fun setLogo(bitmap: Bitmap) {
-                logo.setImageBitmap(bitmap)
+            override fun setLogo(path: String) {
+                Picasso.get()
+                        .load(File(path))
+                        .fit()
+                        .centerCrop()
+                        .into(logo)
             }
 
             override fun setOnItemClickListener(listener: View.OnClickListener) {
@@ -98,7 +111,7 @@ class MainFragment : Fragment() {
     interface MediaRow {
         fun setTitle(text: String)
 
-        fun setLogo(bitmap: Bitmap)
+        fun setLogo(path: String)
 
         fun setOnItemClickListener(listener: View.OnClickListener)
     }

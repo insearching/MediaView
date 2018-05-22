@@ -6,28 +6,26 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ContentListFragment">
+    tools:context=".ContentListFragment"
+    android:background="@android:color/black">
 
-    <ImageView
-        android:id="@+id/image_holder"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitCenter"
-        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
+    <com.tomerrosenfeld.customanalogclockview.CustomAnalogClock
+        android:id="@+id/analog_clock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="?android:attr/progressBarStyleLarge"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        app:default_watchface="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>
